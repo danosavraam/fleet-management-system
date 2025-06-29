@@ -151,3 +151,60 @@ com.fms.simulator
 ```
 
 ---
+
+## Penalty Service (`penalty-service`)
+
+### Features
+
+- Consumes Kafka topic `heartbeat-events` to monitor driver behavior
+- Applies penalty points based on speed:
+    - +2 points per km/h over 60 km/h
+    - +5 points per km/h over 80 km/h
+- Stores driver penalty scores in Redis (key = driver ID)
+- Exposes REST endpoints for penalty inspection and management
+
+### Kafka Integration
+
+- Topic: `heartbeat-events`
+- Deserializer: custom subclass of `ObjectMapperDeserializer<Heartbeat>`
+- Kafka bootstrap: `kafka:9092` (Docker network)
+- Consumer Group: `penalty-consumer-group`
+
+### Redis Integration
+
+- Redis stores each driver's total penalty points
+- Accessible via REST (http://localhost:8083/swagger-ui) or Redis Commander UI (http://localhost:8088)
+
+## Running the Service
+
+### Using Maven
+```
+mvn clean package
+java -jar target/penalty-service.jar
+```
+
+### Using Dockerfile
+Build the image:
+```
+docker build -t penalty-service .
+```
+
+Run the container:
+```
+docker run penalty-service
+```
+
+---
+
+## Directory Structure (main packages)
+
+```
+com.fms.penalty
+├── controller      # REST endpoints
+├── kafka           # Kafka deserializer
+├── model           # Shared data model
+├── service         # Penalty calculation logic
+├── storage         # Redis integration
+```
+
+---
