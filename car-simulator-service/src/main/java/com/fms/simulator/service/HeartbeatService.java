@@ -27,6 +27,7 @@ public class HeartbeatService {
     Emitter<Heartbeat> heartbeatEmitter;
 
     private static final Logger LOG = Logger.getLogger(HeartbeatService.class);
+    private Heartbeat currentHeartbeat;
     private final Random random = new Random();
 
     @Scheduled(every = "5s")
@@ -54,7 +55,7 @@ public class HeartbeatService {
             heartbeat.speed = randomSpeed();
             heartbeat.timestamp = Instant.now();
 
-            heartbeatEmitter.send(heartbeat);
+            sendHeartbeat(heartbeat);
         } catch (Exception e) {
             LOG.error("Failed to fetch drivers or generate heartbeat", e);
         }
@@ -70,6 +71,15 @@ public class HeartbeatService {
 
     private double randomSpeed() {
         return 20 + random.nextDouble() * 60;
+    }
+
+    public Heartbeat getCurrentHeartbeat() {
+        return currentHeartbeat;
+    }
+
+    public void sendHeartbeat(Heartbeat heartbeat) {
+        this.currentHeartbeat = heartbeat;
+        heartbeatEmitter.send(heartbeat);
     }
 
 }

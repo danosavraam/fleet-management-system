@@ -3,8 +3,12 @@ package com.fms.fleet.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Digits;
+import lombok.Getter;
+import lombok.Setter;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+@Getter
+@Setter
 @Schema(description = "A registered driver in the fleet system")
 public class DriverDto {
 

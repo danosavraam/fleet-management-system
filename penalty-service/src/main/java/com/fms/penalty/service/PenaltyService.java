@@ -18,7 +18,7 @@ public class PenaltyService {
         }
     }
 
-    private int calculatePenalty(double speed) {
+    int calculatePenalty(double speed) {
         if (speed > 80) return 5;
         if (speed > 60) return 2;
         return 0;
