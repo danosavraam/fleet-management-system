@@ -3,8 +3,8 @@ FROM maven:3.9.9-amazoncorretto-21 AS build
 
 WORKDIR /build
 
-COPY fleet-service/pom.xml fleet-service/
-COPY fleet-service/src fleet-service/src
+COPY pom.xml fleet-service/
+COPY src fleet-service/src
 
 WORKDIR /build/fleet-service
 RUN mvn clean package -DskipTests

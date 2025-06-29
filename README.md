@@ -20,7 +20,9 @@
 
 ---
 
-## Features
+## Fleet Service (`fleet-service`)
+
+### Features
 
 - CRUD operations for **Drivers**, **Cars**, and **Trips**
 - Driver ↔ Car one-to-one assignment logic
@@ -44,11 +46,11 @@
 
 Use Docker Compose to start PostgreSQL and PgAdmin:
 
-```bash
+```
 docker-compose up --build
 ```
 
-- PostgreSQL: `localhost:5432`, user: `fms`, password: `secret`, database: `fleetdb`
+- PostgreSQL: `localhost:5432`, for docker: `postgres:5432`, user: `fms`, password: `secret`, database: `fleetdb`
 - PgAdmin: [http://localhost:8081](http://localhost:8081), login: `admin@fms.dev` / `admin`
 
 ---
@@ -56,19 +58,19 @@ docker-compose up --build
 ## Running the Service
 
 ### Using Maven
-```bash
+```
 mvn clean package
 java -jar target/fleet-service.jar
 ```
 
 ### Using Dockerfile
 Build the image:
-```bash
+```
 docker build -t fleet-service .
 ```
 
 Run the container:
-```bash
+```
 docker run -p 8080:8080 fleet-service
 ```
 
@@ -90,8 +92,62 @@ com.fms.fleet
 ├── domain          # Entity classes
 ├── dto             # Data Transfer Objects
 ├── mapper          # MapStruct mappers
-├── service         # Business logic
+├── service         # Service logic
 ├── exception       # Custom exceptions and mappers
+```
+
+---
+
+## Car Simulator Service (`car-simulator-service`)
+
+### Features
+
+- Scheduled generation of heartbeat data (car ID, location, speed, timestamp)
+- Fetches driver info from `fleet-service` via REST
+- Publishes to Kafka topic `heartbeat-events` in JSON format
+- Configurable via `application.properties`
+
+## Running the Service
+
+### Using Maven
+```
+mvn clean package
+java -jar target/car-simulator-service.jar
+```
+
+### Using Dockerfile
+Build the image:
+```
+docker build -t car-simulator-service .
+```
+
+Run the container:
+```
+docker run car-simulator-service
+```
+
+---
+
+Ensure Kafka and `fleet-service` are running and healthy before starting the simulator.
+
+### Kafka Integration
+
+- Topic: `heartbeat-events`
+- Format: JSON
+- Serializer: `ObjectMapperSerializer`
+- Kafka bootstrap: `kafka:9092` (Docker network)
+
+You can inspect messages using Kafdrop (http://localhost:9000)
+
+---
+
+## Directory Structure (main packages)
+
+```
+com.fms.simulator
+├── client          # REST client
+├── model           # Model classes
+├── service         # Service logic
 ```
 
 ---

@@ -30,9 +30,50 @@ services:
     networks:
       - fms-network
 
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: kafka
+    healthcheck:
+      test: [ "CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    ports:
+      - "9092:9092"
+    networks:
+      - fms-network
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    container_name: kafdrop
+    environment:
+      KAFKA_BROKERCONNECT: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "9000:9000"
+    networks:
+      - fms-network
+
   fleet-service:
     image: fleet-service:latest
     container_name: fleet-service
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/q/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     depends_on:
       - postgres
     environment:
@@ -41,6 +82,20 @@ services:
       QUARKUS_DATASOURCE_PASSWORD: secret
     ports:
       - "8080:8080"
+    networks:
+      - fms-network
+
+  car-simulator-service:
+    image: car-simulator-service:latest
+    container_name: car-simulator-service
+    depends_on:
+      fleet-service:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      - DRIVER_SERVICE_URL=http://fleet-service:8080
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     networks:
       - fms-network
 

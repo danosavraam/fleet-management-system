@@ -10,7 +10,7 @@ import java.util.List;
 @Mapper(componentModel = "cdi")
 public interface DriverMapper {
 
-    @Mapping(target = "carPlateNumber", ignore = true)
+    @Mapping(target = "carPlateNumber", source = "assignedCar.plateNumber")
     DriverDto toDto(Driver entity);
 
     @Mapping(target = "assignedCar", ignore = true)
